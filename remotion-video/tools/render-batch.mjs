@@ -43,9 +43,17 @@ const slugify = (s) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
+const compositionArgIdx = process.argv.indexOf("--composition");
+const compositionName = compositionArgIdx !== -1 ? process.argv[compositionArgIdx + 1] : "Intro";
+
 for (const c of candidatos) {
   const slug = slugify(c.nome);
   const props = { ...c };
+
+  // Se o candidato tiver o campo citacao no JSON e o template for QuotePost, mapeia
+  if (compositionName === "QuotePost" && !props.citacao) {
+    props.citacao = props.mensagem || "Trabalhando pelo desenvolvimento e futuro do Distrito Federal.";
+  }
 
   // Se o jingle nao existe em public/, desativa o audio para nao quebrar o render.
   if (props.audioPath) {
@@ -58,11 +66,12 @@ for (const c of candidatos) {
 
   const propsFile = path.join(os.tmpdir(), `intro-${slug}.json`);
   fs.writeFileSync(propsFile, JSON.stringify(props));
-  const out = `out/intro-${slug}.mp4`;
-  console.log(`Renderizando ${c.nome} -> ${out}`);
-  execFileSync("npx", ["remotion", "render", "Intro", out, `--props=${propsFile}`], {
+  const out = `out/${compositionName.toLowerCase()}-${slug}.mp4`;
+  console.log(`Renderizando (${compositionName}) ${c.nome} -> ${out}`);
+  execFileSync("npx", ["remotion", "render", compositionName, out, `--props=${propsFile}`], {
     stdio: "inherit",
   });
 }
 
-console.log(`\nPronto: ${candidatos.length} intros em ./out`);
+console.log(`\nPronto: ${candidatos.length} videos gerados com a composicao ${compositionName} em ./out`);
+

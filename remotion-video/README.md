@@ -27,7 +27,8 @@ Le `candidatos.mock.json` e gera um MP4 por candidato em `out/`. Nao depende do 
 ```bash
 export CLICKUP_TOKEN=pk_seu_token   # Personal API Token do ClickUp
 node tools/fetch-candidatos.mjs      # gera candidatos.json a partir do Cadastro de Deputados
-node tools/render-batch.mjs          # renderiza usando candidatos.json
+node tools/render-batch.mjs          # renderiza vinheta de Intro padrão
+node tools/render-batch.mjs --composition QuotePost # renderiza vídeos no template Frase/Citação
 ```
 
 O `fetch-candidatos.mjs` avisa quais candidatos estao sem numero ou mensagem, em vez de gerar video incompleto.

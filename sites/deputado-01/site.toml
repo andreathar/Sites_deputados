@@ -1,0 +1,7 @@
+candidate_name = "Deputado 01"
+slug = "deputado-01"
+placeholder = true
+status = "pending"
+source = "placeholder"
+clickup_url = ""
+list_name = "Cadastro de Deputados"

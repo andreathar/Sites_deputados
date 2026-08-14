@@ -80,22 +80,26 @@ async function download() {
 }
 
 function simplify(rawFile, outFile, keepPct) {
-  // Usa a CLI do mapshaper via npx. Visvalingam mantem melhor a forma das RAs.
-  // clean corrige eventuais geometrias invalidas apos simplificar.
-  console.log(`Simplificando para ${keepPct}% dos pontos...`)
+  // CLI do mapshaper via npx. Cada token e um argumento separado (nada de
+  // "visvalingam 8%" numa string so, que o parser do mapshaper rejeita).
+  // A porcentagem vai como 'percentage=0.08' e o metodo como 'method=visvalingam',
+  // forma inequivoca que independe da ordem. keep-shapes evita sumir RAs pequenas.
+  const fraction = keepPct / 100
+  console.log(`Simplificando (mantendo ~${keepPct}% dos pontos, Visvalingam)...`)
   execFileSync(
     'npx',
     [
       'mapshaper',
       rawFile,
       '-simplify',
-      `visvalingam ${keepPct}%`,
+      `percentage=${fraction}`,
+      'method=visvalingam',
       'keep-shapes',
       '-clean',
       '-o',
+      outFile,
       'format=geojson',
       'precision=0.00001',
-      outFile,
     ],
     { stdio: 'inherit' }
   )

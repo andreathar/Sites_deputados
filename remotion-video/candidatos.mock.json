@@ -1,5 +1,13 @@
 [
   {
+    "nome": "Andre Athar",
+    "numero": "10000",
+    "mensagem": "Tecnologia a servico da campanha",
+    "corPrimaria": "#6d28d9",
+    "fotoPath": "candidatos/andre-teste/foto.png",
+    "logoPath": ""
+  },
+  {
     "nome": "Dr. Gutemberg",
     "numero": "12345",
     "mensagem": "Por uma cidade melhor",
@@ -12,14 +20,6 @@
     "numero": "23456",
     "mensagem": "Saude e educacao em primeiro lugar",
     "corPrimaria": "#c0392b",
-    "fotoPath": "",
-    "logoPath": ""
-  },
-  {
-    "nome": "Japa da Bike",
-    "numero": "34567",
-    "mensagem": "Mobilidade e esporte para todos",
-    "corPrimaria": "#16a34a",
     "fotoPath": "",
     "logoPath": ""
   }

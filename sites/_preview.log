@@ -1,0 +1,4 @@
+Warning: Ignoring extra certs from `/home/athar/.llmtrim/ca.pem`, load failed: error:80000002:system library::No such file or directory
+Warning: Ignoring extra certs from `/home/athar/.llmtrim/ca.pem`, load failed: error:80000002:system library::No such file or directory
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose

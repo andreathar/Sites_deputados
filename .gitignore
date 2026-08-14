@@ -17,6 +17,7 @@ out/
 .env
 .env.*
 !.env.example
+.onnx
 
 # OS
 .DS_Store

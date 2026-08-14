@@ -5,6 +5,7 @@ import Footer from './components/Footer.jsx'
 import Hero from './sections/Hero.jsx'
 import Sobre from './sections/Sobre.jsx'
 import Propostas from './sections/Propostas.jsx'
+import Atuacao from './sections/Atuacao.jsx'
 import Newsletter from './sections/Newsletter.jsx'
 import Obrigado from './pages/Obrigado.jsx'
 
@@ -23,6 +24,7 @@ function Home() {
       <Hero />
       <Sobre />
       <Propostas />
+      <Atuacao />
       <Newsletter />
     </main>
   )

@@ -25,6 +25,21 @@ out/
 .DS_Store
 Thumbs.db
 
+# Logs locais
+*.log
+_preview.log
+_wrangler.log
+
+# Dotfiles de sistema (nunca versionar - pertencem ao home do usuario)
+.bashrc
+.bash_profile
+.zshrc
+.zprofile
+.profile
+.gitconfig
+.ripgreprc
+.mcp.json
+
 # Local agent/editor tooling (machine-local state)
 .codegraph/
 .herdr/

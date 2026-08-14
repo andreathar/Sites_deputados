@@ -1,27 +1,35 @@
-// Gera o jingle de cada deputado a partir das letras em sites/deputado-XX/assets/lyrics/
-// usando a API de Text-to-Speech da ElevenLabs (chave em .env -> ELEVENLABS_API_KEY).
-// O audio gerado e salvo em sites/deputado-XX/assets/jingles/jingle.mp3.
+// Gera o JINGLE (musica cantada) de cada deputado a partir da letra em
+// sites/deputado-XX/assets/lyrics/ usando a API Eleven Music da ElevenLabs.
+//
+// IMPORTANTE: usa o endpoint de MUSICA (/v1/music), nao o de text-to-speech.
+// O TTS apenas le a letra em voz alta; o Eleven Music compoe uma musica de
+// verdade (melodia + instrumentacao + vocais) a partir de um prompt que
+// combina o estilo desejado com a letra.
+//
+// Chave: .env na raiz do monorepo -> ELEVENLABS_API_KEY
 //
 // Convencao:
-//   sites/deputado-XX/assets/lyrics/jingle.txt   -> letra do jingle (qualquer .txt serve)
-//   sites/deputado-XX/assets/jingles/jingle.mp3  -> audio gerado (consumido pelo sync-assets.mjs)
+//   sites/deputado-XX/assets/lyrics/jingle.txt   -> letra do jingle
+//   sites/deputado-XX/assets/jingles/jingle.mp3  -> musica gerada
 //
-// Opcoes do site.toml (opcionais):
-//   jingle_voice = "TX3L..."   -> voz especifica para o deputado (sobrescreve a padrao)
+// Opcoes no site.toml (todas opcionais):
+//   jingle_estilo = "jingle de campanha animado, marchinha brasileira, coro alegre"
+//   jingle_duracao_seg = 20     -> duracao alvo em segundos (padrao 20)
 //
 // Uso:
 //   node tools/generate-jingles.mjs                (todos os sites com letra)
 //   node tools/generate-jingles.mjs --site deputado-01
-//   node tools/generate-jingles.mjs --force        (regenera mesmo se jingle.mp3 ja existe)
+//   node tools/generate-jingles.mjs --force        (regenera mesmo se ja existe)
 import fs from "node:fs";
 import path from "node:path";
 
 const SITES_ROOT = path.join("..", "sites");
 
-// Voz padrao: Liam - Energetic, Social Media Creator (boa para jingle de campanha).
-const DEFAULT_VOICE = "TX3LPaxmHKxFdv7VOQHJ";
-const MODEL_ID = "eleven_multilingual_v2"; // suporta PT-BR
+const MODEL_ID = "music_v2";
 const OUTPUT_FORMAT = "mp3_44100_128";
+const DEFAULT_ESTILO =
+  "jingle de campanha politica, animado e otimista, coro alegre, facil de memorizar";
+const DEFAULT_DURACAO_SEG = 20;
 
 const LYRICS_NAMES = ["jingle.txt", "letra.txt", "lyrics.txt"];
 
@@ -46,16 +54,13 @@ function parseToml(text) {
 
 function loadApiKey() {
   if (process.env.ELEVENLABS_API_KEY) return process.env.ELEVENLABS_API_KEY;
-  // Fallback: le o .env na raiz do monorepo (Sites_deputados/.env).
   for (const candidate of [path.join("..", ".env"), path.join("..", "..", ".env")]) {
     if (fs.existsSync(candidate)) {
       const text = fs.readFileSync(candidate, "utf8");
       const line = text
         .split("\n")
         .find((l) => l.trim().startsWith("ELEVENLABS_API_KEY="));
-      if (line) {
-        return line.split("=").slice(1).join("=").trim();
-      }
+      if (line) return line.split("=").slice(1).join("=").trim();
     }
   }
   return null;
@@ -73,50 +78,46 @@ function getSiteDirs() {
 function findLyrics(dir) {
   const lyricsDir = path.join(dir, "assets", "lyrics");
   if (!fs.existsSync(lyricsDir)) return null;
-  // Prefere nomes convencionais; senao, o primeiro .txt.
   for (const n of LYRICS_NAMES) {
     const p = path.join(lyricsDir, n);
     if (fs.existsSync(p)) return p;
   }
-  const txt = fs
-    .readdirSync(lyricsDir)
-    .find((f) => f.endsWith(".txt"));
+  const txt = fs.readdirSync(lyricsDir).find((f) => f.endsWith(".txt"));
   return txt ? path.join(lyricsDir, txt) : null;
 }
 
 async function generateJingle(apiKey, siteDir, lyricsFile, outFile) {
-  const text = fs.readFileSync(lyricsFile, "utf8").trim();
-  if (!text) {
+  const letra = fs.readFileSync(lyricsFile, "utf8").trim();
+  if (!letra) {
     console.warn(`  (letra vazia em ${lyricsFile}, pulando)`);
     return false;
   }
 
-  const toml = parseToml(
-    fs.readFileSync(path.join(siteDir, "site.toml"), "utf8")
-  );
-  const voice = toml.jingle_voice || process.env.JINGLE_VOICE || DEFAULT_VOICE;
+  const toml = parseToml(fs.readFileSync(path.join(siteDir, "site.toml"), "utf8"));
+  const estilo = toml.jingle_estilo || DEFAULT_ESTILO;
+  const duracaoSeg = Number(toml.jingle_duracao_seg) || DEFAULT_DURACAO_SEG;
 
-  console.log(`  Gerando jingle com voz ${voice} (${text.length} chars)...`);
-  const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=${OUTPUT_FORMAT}`,
-    {
-      method: "POST",
-      headers: {
-        "xi-api-key": apiKey,
-        "Content-Type": "application/json",
-        Accept: "audio/mpeg",
-      },
-      body: JSON.stringify({
-        text,
-        model_id: MODEL_ID,
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-      }),
-    }
-  );
+  // O Eleven Music recebe um unico prompt: estilo + letra a ser cantada.
+  const prompt = `${estilo}. Cante exatamente a seguinte letra em portugues do Brasil:\n\n${letra}`;
+
+  console.log(`  Compondo jingle (~${duracaoSeg}s, ${letra.length} chars de letra)...`);
+  const res = await fetch(`https://api.elevenlabs.io/v1/music?output_format=${OUTPUT_FORMAT}`, {
+    method: "POST",
+    headers: {
+      "xi-api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "audio/mpeg",
+    },
+    body: JSON.stringify({
+      prompt,
+      model_id: MODEL_ID,
+      music_length_ms: Math.round(duracaoSeg * 1000),
+    }),
+  });
 
   if (!res.ok) {
     throw new Error(
-      `ElevenLabs ${res.status} ${path.basename(siteDir)}: ${(await res.text()).slice(0, 300)}`
+      `Eleven Music ${res.status} ${path.basename(siteDir)}: ${(await res.text()).slice(0, 300)}`
     );
   }
 
@@ -129,19 +130,15 @@ async function generateJingle(apiKey, siteDir, lyricsFile, outFile) {
 
 const apiKey = loadApiKey();
 if (!apiKey) {
-  console.error(
-    "Defina ELEVENLABS_API_KEY (no .env da raiz ou como variavel de ambiente)."
-  );
+  console.error("Defina ELEVENLABS_API_KEY (no .env da raiz ou como variavel de ambiente).");
   process.exit(1);
 }
 
 const force = process.argv.includes("--force");
-const onlySite = process.argv.indexOf("--site");
-const only = onlySite !== -1 ? process.argv[onlySite + 1] : null;
+const onlySiteIdx = process.argv.indexOf("--site");
+const only = onlySiteIdx !== -1 ? process.argv[onlySiteIdx + 1] : null;
 
-const sites = getSiteDirs().filter((d) =>
-  only ? path.basename(d) === only : true
-);
+const sites = getSiteDirs().filter((d) => (only ? path.basename(d) === only : true));
 
 let gerados = 0;
 let pulados = 0;
@@ -156,7 +153,6 @@ for (const siteDir of sites) {
     pulados++;
     continue;
   }
-
   if (fs.existsSync(outFile) && !force) {
     console.log(`- ${slug}: jingle.mp3 ja existe (use --force para regenerar)`);
     pulados++;
@@ -165,16 +161,12 @@ for (const siteDir of sites) {
 
   console.log(`- ${slug}: ${path.relative(process.cwd(), lyricsFile)}`);
   try {
-    if (await generateJingle(apiKey, siteDir, lyricsFile, outFile)) {
-      gerados++;
-    }
+    if (await generateJingle(apiKey, siteDir, lyricsFile, outFile)) gerados++;
   } catch (e) {
     console.error(`  ERRO: ${e.message}`);
     pulados++;
   }
 }
 
-console.log(
-  `\nPronto: ${gerados} jingle(s) gerado(s), ${pulados} pulado(s).`
-);
+console.log(`\nPronto: ${gerados} jingle(s) gerado(s), ${pulados} pulado(s).`);
 console.log("Depois rode: node tools/sync-assets.mjs && node tools/render-batch.mjs --sites");

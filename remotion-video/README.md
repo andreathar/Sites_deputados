@@ -1,54 +1,60 @@
-# Remotion video
+# Intros de Campanha (Remotion)
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
+Vinhetas de abertura de 5 segundos para os videos dos candidatos: foto + fundo animado + logo + numero + mensagem. **Nao e o candidato falando** (isso violaria as regras do TSE): e motion graphics de marca, usado como intro do video onde o candidato real aparece depois. Todo video sai com o selo obrigatorio de conteudo produzido com IA.
 
-Welcome to your Remotion project!
+## Rodar o Studio (edicao ao vivo)
 
-## Commands
-
-**Install Dependencies**
-
-```console
-npm i
+```bash
+cd remotion-video
+npm install
+npm run dev        # abre o Remotion Studio (porta 3001)
 ```
 
-**Start Preview**
+Na barra lateral, clique na composicao **Intro**. Os campos (nome, numero, mensagem, cor, caminho da foto e da logo) sao editaveis em tempo real pelos controles. Otimo para demonstrar o conceito sem renderizar nada.
 
-```console
-npm run dev
+## Gerar o lote de videos
+
+### Opcao A: com dados de exemplo (mock)
+
+```bash
+node tools/render-batch.mjs --mock
 ```
 
-**Render video**
+Le `candidatos.mock.json` e gera um MP4 por candidato em `out/`. Nao depende do ClickUp, ideal para testar.
 
-```console
-npx remotion render
+### Opcao B: com dados reais do ClickUp
+
+```bash
+export CLICKUP_TOKEN=pk_seu_token   # Personal API Token do ClickUp
+node tools/fetch-candidatos.mjs      # gera candidatos.json a partir do Cadastro de Deputados
+node tools/render-batch.mjs          # renderiza usando candidatos.json
 ```
 
-**Upgrade Remotion**
+O `fetch-candidatos.mjs` avisa quais candidatos estao sem numero ou mensagem, em vez de gerar video incompleto.
 
-```console
-npx remotion upgrade
+## Assets (foto e logo)
+
+O template le os caminhos relativos a `public/`. A convencao e:
+
+```
+public/candidatos/<slug>/foto.png
+public/candidatos/<slug>/logo.png
 ```
 
-## Docs
+O `<slug>` vem do nome do candidato (minusculo, sem acento, com hifens). Se a foto ou a logo nao existir, o template mostra um placeholder no lugar, entao nada quebra durante a demo.
 
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
+## Sobre remocao de fundo
 
-## Help
+O Remotion **nao** remove fundo de foto: ele apenas usa a imagem que voce fornecer. Para o candidato aparecer recortado sobre o fundo animado, entregue a foto como **PNG com transparencia**. Opcoes para recortar antes:
 
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
+- `rembg` (open-source, roda local) — bom para automatizar dentro do batch
+- API do remove.bg
+- Photoshop / editor manual
 
-## Issues
+Se a foto ja vier transparente do time grafico, e so soltar na pasta do candidato.
 
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
+## Especificacoes fixas
 
-## License
-
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+- Resolucao: 1080x1920 (vertical, reels/stories)
+- Duracao: 150 frames (5s a 30fps)
+- Selo do TSE sempre visivel (exigencia legal)

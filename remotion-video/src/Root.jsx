@@ -10,7 +10,7 @@ export const RemotionRoot = () => {
       <Composition
         id="Intro"
         component={Intro}
-        durationInFrames={150} // 5s @ 30fps
+        durationInFrames={240} // 8s @ 30fps
         fps={30}
         width={1080}
         height={1920} // vertical, para reels/stories

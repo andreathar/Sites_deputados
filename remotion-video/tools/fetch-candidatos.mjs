@@ -62,6 +62,9 @@ for (const t of tasks) {
     corPrimaria: fields.corPrimaria || "#1b6ef3",
     fotoPath: `candidatos/${slug}/foto.png`,
     logoPath: `candidatos/${slug}/logo.png`,
+    // Jingle: convencao public/candidatos/<slug>/jingle.mp3 (ou wav/m4a).
+    // Copie o arquivo na pasta antes de renderizar, ou deixe vazio.
+    audioPath: `candidatos/${slug}/jingle.mp3`,
   };
   if (!registro.numero || !registro.mensagem) faltando.push(nome);
   candidatos.push(registro);

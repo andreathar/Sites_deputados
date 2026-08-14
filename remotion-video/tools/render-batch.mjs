@@ -1,10 +1,12 @@
 // Renderiza uma intro por candidato chamando a CLI do Remotion.
 // Antes de renderizar, recorta o fundo das fotos (rembg) via prep-fotos.mjs.
 //
-// Le candidatos.json (ou candidatos.mock.json com --mock) e gera out/intro-<slug>.mp4
+// Le candidatos.json (ou candidatos.mock.json com --mock / candidatos.sites.json com --sites)
+// e gera out/intro-<slug>.mp4
 //
-// Uso: node tools/render-batch.mjs              (usa candidatos.json)
+// Uso: node tools/render-batch.mjs              (usa candidatos.json do ClickUp)
 //      node tools/render-batch.mjs --mock        (usa candidatos.mock.json)
+//      node tools/render-batch.mjs --sites       (usa candidatos.sites.json, gerado por sync-assets.mjs)
 //      node tools/render-batch.mjs --skip-prep   (nao roda o recorte de fundo)
 import fs from "node:fs";
 import os from "node:os";
@@ -13,8 +15,9 @@ import { execFileSync } from "node:child_process";
 import { prepFotos } from "./prep-fotos.mjs";
 
 const useMock = process.argv.includes("--mock");
+const useSites = process.argv.includes("--sites");
 const skipPrep = process.argv.includes("--skip-prep");
-const dataFile = useMock ? "candidatos.mock.json" : "candidatos.json";
+const dataFile = useMock ? "candidatos.mock.json" : useSites ? "candidatos.sites.json" : "candidatos.json";
 
 if (!fs.existsSync(dataFile)) {
   console.error(
@@ -42,8 +45,19 @@ const slugify = (s) =>
 
 for (const c of candidatos) {
   const slug = slugify(c.nome);
+  const props = { ...c };
+
+  // Se o jingle nao existe em public/, desativa o audio para nao quebrar o render.
+  if (props.audioPath) {
+    const audioFile = path.join("public", props.audioPath);
+    if (!fs.existsSync(audioFile)) {
+      console.warn(`  (sem jingle em ${audioFile}, seguindo sem audio)`);
+      props.audioPath = "";
+    }
+  }
+
   const propsFile = path.join(os.tmpdir(), `intro-${slug}.json`);
-  fs.writeFileSync(propsFile, JSON.stringify(c));
+  fs.writeFileSync(propsFile, JSON.stringify(props));
   const out = `out/intro-${slug}.mp4`;
   console.log(`Renderizando ${c.nome} -> ${out}`);
   execFileSync("npx", ["remotion", "render", "Intro", out, `--props=${propsFile}`], {

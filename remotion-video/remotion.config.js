@@ -9,3 +9,6 @@ import { enableTailwind } from '@remotion/tailwind-v4';
 Config.setRspack(true);
 Config.setVideoImageFormat("jpeg");
 Config.overrideBundlerConfig(enableTailwind);
+Config.setDefaultEditor('vscode');
+Config.setDefaultCodingAgent('copilot');
+Config.setPublicLicenseKey('free-license');

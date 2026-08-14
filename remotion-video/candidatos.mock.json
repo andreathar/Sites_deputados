@@ -5,7 +5,8 @@
     "mensagem": "Tecnologia a servico da campanha",
     "corPrimaria": "#6d28d9",
     "fotoPath": "candidatos/andre-teste/foto.png",
-    "logoPath": ""
+    "logoPath": "",
+    "audioPath": "candidatos/andre-teste/jingle.wav"
   },
   {
     "nome": "Dr. Gutemberg",
@@ -13,7 +14,8 @@
     "mensagem": "Por uma cidade melhor",
     "corPrimaria": "#1b6ef3",
     "fotoPath": "",
-    "logoPath": ""
+    "logoPath": "",
+    "audioPath": ""
   },
   {
     "nome": "Deputada Ana",
@@ -21,6 +23,7 @@
     "mensagem": "Saude e educacao em primeiro lugar",
     "corPrimaria": "#c0392b",
     "fotoPath": "",
-    "logoPath": ""
+    "logoPath": "",
+    "audioPath": ""
   }
 ]

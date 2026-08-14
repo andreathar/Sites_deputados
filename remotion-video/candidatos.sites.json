@@ -1,0 +1,302 @@
+[
+  {
+    "nome": "Deputado 01",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-01/foto.png",
+    "logoPath": "",
+    "audioPath": "candidatos/deputado-01/jingle.mp3",
+    "slug": "deputado-01"
+  },
+  {
+    "nome": "Deputado 02",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-02/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-02"
+  },
+  {
+    "nome": "Deputado 03",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-03/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-03"
+  },
+  {
+    "nome": "Deputado 04",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-04/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-04"
+  },
+  {
+    "nome": "Deputado 05",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-05/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-05"
+  },
+  {
+    "nome": "Deputado 06",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-06/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-06"
+  },
+  {
+    "nome": "Deputado 07",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-07/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-07"
+  },
+  {
+    "nome": "Deputado 08",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-08/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-08"
+  },
+  {
+    "nome": "Deputado 09",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-09/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-09"
+  },
+  {
+    "nome": "Deputado 10",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-10/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-10"
+  },
+  {
+    "nome": "Deputado 11",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-11/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-11"
+  },
+  {
+    "nome": "Deputado 12",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-12/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-12"
+  },
+  {
+    "nome": "Deputado 13",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-13/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-13"
+  },
+  {
+    "nome": "Deputado 14",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-14/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-14"
+  },
+  {
+    "nome": "Deputado 15",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-15/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-15"
+  },
+  {
+    "nome": "Deputado 16",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-16/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-16"
+  },
+  {
+    "nome": "Deputado 17",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-17/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-17"
+  },
+  {
+    "nome": "Deputado 18",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-18/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-18"
+  },
+  {
+    "nome": "Deputado 19",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-19/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-19"
+  },
+  {
+    "nome": "Deputado 20",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-20/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-20"
+  },
+  {
+    "nome": "Deputado 21",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-21/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-21"
+  },
+  {
+    "nome": "Deputado 22",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-22/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-22"
+  },
+  {
+    "nome": "Deputado 23",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-23/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-23"
+  },
+  {
+    "nome": "Deputado 24",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-24/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-24"
+  },
+  {
+    "nome": "Deputado 25",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-25/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-25"
+  },
+  {
+    "nome": "Deputado 26",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-26/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-26"
+  },
+  {
+    "nome": "Deputado 27",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-27/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-27"
+  },
+  {
+    "nome": "Deputado 28",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-28/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-28"
+  },
+  {
+    "nome": "Deputado 29",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-29/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-29"
+  },
+  {
+    "nome": "Deputado 30",
+    "numero": "",
+    "mensagem": "",
+    "corPrimaria": "#1b6ef3",
+    "fotoPath": "candidatos/deputado-30/foto.png",
+    "logoPath": "",
+    "audioPath": "",
+    "slug": "deputado-30"
+  }
+]

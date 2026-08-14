@@ -10,6 +10,8 @@ export const introSchema = z.object({
   // Caminhos relativos a public/. Deixe vazio para ver o placeholder no mock.
   fotoPath: z.string().optional().default(""),
   logoPath: z.string().optional().default(""),
+  // Jingle de audio (mp3/wav) por deputado, relativo a public/. Opcional.
+  audioPath: z.string().optional().default(""),
 });
 
 export const introDefaults = {
@@ -19,4 +21,5 @@ export const introDefaults = {
   corPrimaria: "#1b6ef3",
   fotoPath: "",
   logoPath: "",
+  audioPath: "",
 };

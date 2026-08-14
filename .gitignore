@@ -17,7 +17,9 @@ out/
 .env
 .env.*
 !.env.example
-.onnx
+
+# Modelos baixados (rembg/onnx) - grandes demais para o git (>100MB)
+*.onnx
 
 # OS
 .DS_Store

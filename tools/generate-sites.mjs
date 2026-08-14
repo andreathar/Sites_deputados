@@ -6,10 +6,23 @@
  * Vite + React app (from `tools/site-template/`) into `sites/<slug>/`.
  *
  * Usage:
- *   node tools/generate-sites.mjs                  # all sites
+ *   node tools/generate-sites.mjs                  # generate all sites (skips already built)
  *   node tools/generate-sites.mjs --only deputado-01
  *   node tools/generate-sites.mjs --force          # regenerate even if built
  *   node tools/generate-sites.mjs --dry-run        # show what would happen
+ *   node tools/generate-sites.mjs --sync           # propagate template CODE into built sites
+ *
+ * --sync explained:
+ *   Copies template code files (App.jsx, styles.css, sections/, components/,
+ *   pages/, main.jsx, vite.config.js, functions/) OVER each already-generated
+ *   site, so a new section or a style fix in the template reaches every site.
+ *   It PRESERVES per-candidate data and never touches media:
+ *     - src/site-config.js      (generated from site.toml)
+ *     - src/data/atuacao.js     (filled by hand per candidate)
+ *     - index.html, package.json, wrangler.toml (patched with name/slug)
+ *     - public/                 (foto, logo, jingle, df-ras.geojson)
+ *   New template files that don't exist yet in the site (e.g. a brand-new
+ *   section) are created; existing code files are overwritten.
  *
  * SKILL: see .agents/skills/deputado-site/SKILL.md
  */
@@ -25,6 +38,18 @@ const TEMPLATE_DIR = path.join(__dirname, 'site-template')
 const SKIP_TEMPLATE = new Set(['node_modules', 'dist', '.git'])
 const MEDIA_DIRS = { foto: 'foto', logo: 'logo', jingle: 'jingles' }
 const MEDIA_TARGETS = { foto: 'foto', logo: 'logo', jingle: 'jingle' }
+
+// --sync: caminhos (relativos ao site) que sao DADOS do candidato e nunca
+// devem ser sobrescritos se ja existirem. Tudo o mais no template e CODIGO.
+const SYNC_PRESERVE = new Set([
+  'src/site-config.js',
+  'src/data/atuacao.js',
+  'index.html',
+  'package.json',
+  'wrangler.toml',
+])
+// --sync: diretorios do template ignorados por completo (midia mora em public/).
+const SYNC_SKIP_DIRS = new Set(['node_modules', 'dist', '.git', 'public'])
 
 // ---------------------------------------------------------------------------
 // Minimal TOML parser (flat tables, arrays of strings, array-of-tables)
@@ -149,6 +174,35 @@ function copyDir(src, dest, skip = SKIP_TEMPLATE) {
   }
 }
 
+// --sync: copia CODIGO do template sobre o site, sobrescrevendo, mas
+// preservando os arquivos de DADOS (SYNC_PRESERVE) e pulando public/.
+// Retorna { written, preserved } com os caminhos relativos afetados.
+function syncDir(srcRoot, destRoot) {
+  const written = []
+  const preserved = []
+  const walk = (relDir) => {
+    const srcDir = path.join(srcRoot, relDir)
+    for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+      const rel = relDir ? `${relDir}/${entry.name}` : entry.name
+      if (entry.isDirectory()) {
+        if (SYNC_SKIP_DIRS.has(entry.name)) continue
+        walk(rel)
+        continue
+      }
+      const destFile = path.join(destRoot, rel)
+      if (SYNC_PRESERVE.has(rel) && fs.existsSync(destFile)) {
+        preserved.push(rel)
+        continue
+      }
+      fs.mkdirSync(path.dirname(destFile), { recursive: true })
+      fs.copyFileSync(path.join(srcRoot, rel), destFile)
+      written.push(rel)
+    }
+  }
+  walk('')
+  return { written, preserved }
+}
+
 function writeIfChanged(file, content) {
   const prev = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null
   if (prev === content) return false
@@ -235,7 +289,7 @@ function generateSite(siteDir, opts) {
   // Already generated?
   const marker = path.join(dest, 'src', 'site-config.js')
   if (fs.existsSync(marker) && !opts.force) {
-    return { status: 'skip', slug, name, reason: 'already generated (use --force)' }
+    return { status: 'skip', slug, name, reason: 'already generated (use --force ou --sync)' }
   }
 
   // 1) copy template
@@ -274,18 +328,43 @@ function generateSite(siteDir, opts) {
   return { status: 'generated', slug, name, media: Object.keys(media) }
 }
 
+// --sync: so atualiza sites JA gerados; nao gera novos nem toca em dados.
+function syncSite(siteDir, opts) {
+  const cfg = readToml(siteDir)
+  if (!cfg) return { status: 'skip', reason: 'no site.toml' }
+  const folder = path.basename(siteDir)
+  const slug = cfg.slug || folder
+  const name = cfg.candidate_name || slug
+  const dest = path.join(SITES_DIR, slug)
+
+  // So faz sentido em site ja gerado.
+  if (!fs.existsSync(path.join(dest, 'src', 'site-config.js'))) {
+    return { status: 'skip', slug, name, reason: 'ainda nao gerado (rode sem --sync primeiro)' }
+  }
+
+  if (opts.dryRun) {
+    const { written, preserved } = syncDir(TEMPLATE_DIR, path.join(SITES_DIR, '__sync_dryrun__'))
+    fs.rmSync(path.join(SITES_DIR, '__sync_dryrun__'), { recursive: true, force: true })
+    return { status: 'dry-run-sync', slug, name, wouldWrite: written.length }
+  }
+
+  const { written, preserved } = syncDir(TEMPLATE_DIR, dest)
+  return { status: 'synced', slug, name, written: written.length, preserved }
+}
+
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 function main() {
   const args = process.argv.slice(2)
   const only = []
-  const opts = { force: false, dryRun: false }
+  const opts = { force: false, dryRun: false, sync: false }
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
     if (a === '--only') only.push(args[++i])
     else if (a === '--force') opts.force = true
     else if (a === '--dry-run') opts.dryRun = true
+    else if (a === '--sync') opts.sync = true
     else if (a.startsWith('--only=')) only.push(a.slice(7))
   }
 
@@ -309,22 +388,29 @@ function main() {
     return only.includes(path.basename(d))
   })
 
-  log(`📦 Deputado Site Generator — ${targets.length} site(s)`)
+  const modo = opts.sync ? 'Sync (propagar template)' : 'Generator'
+  log(`📦 Deputado Site ${modo} — ${targets.length} site(s)`)
   log('')
 
-  const summary = { generated: [], skipped: [], errors: [] }
+  const summary = { generated: [], skipped: [], synced: [], errors: [] }
   for (const dir of targets) {
     try {
-      const r = generateSite(dir, opts)
+      const r = opts.sync ? syncSite(dir, opts) : generateSite(dir, opts)
       if (r.status === 'generated') {
         log(`  ✅ ${r.slug}  (${r.name})  media: ${r.media.join(', ') || 'none'}`)
         summary.generated.push(r.slug)
+      } else if (r.status === 'synced') {
+        log(`  🔄 ${r.slug}  — ${r.written} arquivo(s) atualizado(s); preservados: ${r.preserved.join(', ') || 'nenhum'}`)
+        summary.synced.push(r.slug)
       } else if (r.status === 'skip') {
-        log(`  ⏭️  ${r.slug}  — ${r.reason}`)
+        log(`  ⏭️  ${r.slug || path.basename(dir)}  — ${r.reason}`)
         summary.skipped.push(r.slug)
       } else if (r.status === 'dry-run') {
         log(`  👀 would generate ${r.slug}  (${r.name})`)
         summary.generated.push(r.slug)
+      } else if (r.status === 'dry-run-sync') {
+        log(`  👀 would sync ${r.slug}  (~${r.wouldWrite} arquivo(s) de codigo)`)
+        summary.synced.push(r.slug)
       }
     } catch (err) {
       log(`  ❌ ${path.basename(dir)} — ${err.message}`)
@@ -333,13 +419,17 @@ function main() {
   }
 
   log('')
-  log(`Done: ${summary.generated.length} generated, ${summary.skipped.length} skipped, ${summary.errors.length} errors.`)
-  if (!opts.dryRun) {
-    log('')
-    log('Next steps per site (cd sites/<slug>):')
-    log('  npm install')
-    log('  npm run dev            # local dev (newsletter via wrangler pages dev)')
-    log('  npm run deploy         # build + publish to Cloudflare Pages')
+  if (opts.sync) {
+    log(`Done: ${summary.synced.length} sincronizado(s), ${summary.skipped.length} pulado(s), ${summary.errors.length} erro(s).`)
+  } else {
+    log(`Done: ${summary.generated.length} generated, ${summary.skipped.length} skipped, ${summary.errors.length} errors.`)
+    if (!opts.dryRun) {
+      log('')
+      log('Next steps per site (cd sites/<slug>):')
+      log('  npm install')
+      log('  npm run dev            # local dev (newsletter via wrangler pages dev)')
+      log('  npm run deploy         # build + publish to Cloudflare Pages')
+    }
   }
 }
 

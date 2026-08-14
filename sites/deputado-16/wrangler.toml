@@ -1,0 +1,14 @@
+# Cloudflare Pages project config — generated per site.
+# Docs: https://developers.cloudflare.com/pages/functions/
+name = "deputado-16"
+compatibility_date = "2024-09-23"
+
+# Static build output (vite build writes here)
+pages_build_output_dir = "dist"
+
+# KV namespace for the newsletter subscription endpoint.
+# 1) Create the namespace once:  npx wrangler kv namespace create NEWSLETTER_KV
+# 2) Paste the returned id below (per site you can share ONE namespace).
+[[kv_namespaces]]
+binding = "NEWSLETTER_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

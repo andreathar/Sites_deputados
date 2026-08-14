@@ -1,0 +1,3 @@
+# SPA routing — serve index.html for all routes (so /obrigado works on direct
+# navigation and refresh). Cloudflare Pages reads this from the build output.
+/*    /index.html   200

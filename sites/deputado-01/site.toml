@@ -5,3 +5,16 @@ status = "pending"
 source = "placeholder"
 clickup_url = ""
 list_name = "Cadastro de Deputados"
+
+[atuacao]
+titulo = "Onde eu atuo"
+descricao = "Regioes do Distrito Federal onde concentro meu trabalho: atendimento nas comunidades, escuta ativa e prioridades de mandato."
+areasAtuacao = ["Ceilandia", "Taguatinga", "Plano Piloto", "Sobradinho"]
+
+# Pontos de interesse (lat/lng em graus decimais).
+pins = [
+  { lat = -15.8267, lng = -47.9218, label = "Comite central", tipo = "comite" },
+  { lat = -15.78, lng = -47.93, label = "Gabinete", tipo = "gabinete" },
+  { lat = -15.8069, lng = -48.0756, label = "Base na Ceilandia", tipo = "base" }
+]
+

@@ -32,6 +32,13 @@ node tools/render-batch.mjs          # renderiza usando candidatos.json
 
 O `fetch-candidatos.mjs` avisa quais candidatos estao sem numero ou mensagem, em vez de gerar video incompleto.
 
+### Passo adicional: Upload dos vídeos para o ClickUp
+
+```bash
+export CLICKUP_TOKEN=pk_seu_token
+node tools/upload-clickup.mjs        # anexa os MP4s das intros diretamente nas tarefas do ClickUp
+```
+
 ## Assets (foto e logo)
 
 O template le os caminhos relativos a `public/`. A convencao e:

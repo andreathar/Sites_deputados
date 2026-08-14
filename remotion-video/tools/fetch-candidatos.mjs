@@ -26,11 +26,26 @@ const slugify = (s) =>
     .replace(/^-|-$/g, "");
 
 async function getTasks() {
-  const url = `https://api.clickup.com/api/v2/list/${LIST_ID}/task?include_closed=false&subtasks=false`;
-  const res = await fetch(url, { headers: { Authorization: TOKEN } });
-  if (!res.ok) throw new Error(`ClickUp ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return data.tasks ?? [];
+  const allTasks = [];
+  let page = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const url = `https://api.clickup.com/api/v2/list/${LIST_ID}/task?include_closed=false&subtasks=false&page=${page}`;
+    const res = await fetch(url, { headers: { Authorization: TOKEN } });
+    if (!res.ok) throw new Error(`ClickUp ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const tasks = data.tasks ?? [];
+    allTasks.push(...tasks);
+
+    if (data.last_page || tasks.length === 0) {
+      hasMore = false;
+    } else {
+      page++;
+    }
+  }
+
+  return allTasks;
 }
 
 function readFields(task) {
@@ -47,15 +62,29 @@ function readFields(task) {
   return out;
 }
 
+// Mapeamento opcional para bater com os nomes de pastas dos sites (deputado-01, deputado-02, etc.)
+function findMatchingSiteSlug(nome, index) {
+  const defaultSlug = `deputado-${String(index + 1).padStart(2, "0")}`;
+  const siteTomlPath = path.join("..", "sites", defaultSlug, "site.toml");
+  if (fs.existsSync(siteTomlPath)) {
+    return defaultSlug;
+  }
+  return slugify(nome);
+}
+
+import path from "node:path";
+
 const tasks = await getTasks();
 const candidatos = [];
 const faltando = [];
 
-for (const t of tasks) {
+for (let i = 0; i < tasks.length; i++) {
+  const t = tasks[i];
   const nome = t.name.trim();
-  const slug = slugify(nome);
+  const slug = findMatchingSiteSlug(nome, i);
   const fields = readFields(t);
   const registro = {
+    taskId: t.id,
     nome,
     numero: fields.numero ?? "",
     mensagem: fields.mensagem ?? "",
@@ -63,8 +92,8 @@ for (const t of tasks) {
     fotoPath: `candidatos/${slug}/foto.png`,
     logoPath: `candidatos/${slug}/logo.png`,
     // Jingle: convencao public/candidatos/<slug>/jingle.mp3 (ou wav/m4a).
-    // Copie o arquivo na pasta antes de renderizar, ou deixe vazio.
     audioPath: `candidatos/${slug}/jingle.mp3`,
+    slug,
   };
   if (!registro.numero || !registro.mensagem) faltando.push(nome);
   candidatos.push(registro);

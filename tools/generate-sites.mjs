@@ -18,11 +18,27 @@
  *   site, so a new section or a style fix in the template reaches every site.
  *   It PRESERVES per-candidate data and never touches media:
  *     - src/site-config.js      (generated from site.toml)
- *     - src/data/atuacao.js     (filled by hand per candidate)
+ *     - src/data/atuacao.js     (generated from the [atuacao] section, if any)
  *     - index.html, package.json, wrangler.toml (patched with name/slug)
  *     - public/                 (foto, logo, jingle, df-ras.geojson)
  *   New template files that don't exist yet in the site (e.g. a brand-new
  *   section) are created; existing code files are overwritten.
+ *
+ * [atuacao] in site.toml (optional):
+ *   Populates the "Onde eu atuo" map section automatically:
+ *
+ *     [atuacao]
+ *     titulo = "Onde eu atuo"
+ *     descricao = "As regioes do DF onde concentro meu trabalho."
+ *     areasAtuacao = ["Ceilandia", "Taguatinga"]
+ *     pins = [{ lat = -15.8267, lng = -47.9218, label = "Comite central", tipo = "comite" }]
+ *   Arrays e tabelas inline podem ocupar varias linhas:
+ *     pins = [
+ *       { lat = -15.8267, lng = -47.9218, label = "Comite central", tipo = "comite" },
+ *       { lat = -15.78,   lng = -47.93,   label = "Gabinete",       tipo = "gabinete" },
+ *     ]
+ *   - areasAtuacao: nomes das RAs (a comparacao ignora acentos e maiusculas).
+ *   - pins[].tipo: livre (ex.: comite, gabinete, base).
  *
  * SKILL: see .agents/skills/deputado-site/SKILL.md
  */
@@ -58,8 +74,10 @@ function parseToml(src) {
   const root = {}
   let current = root
   const lines = src.split(/\r?\n/)
-  for (let raw of lines) {
-    const line = raw.trim()
+  let i = 0
+  while (i < lines.length) {
+    let line = lines[i].trim()
+    i++
     if (!line || line.startsWith('#')) continue
 
     if (line.startsWith('[[') && line.endsWith(']]')) {
@@ -79,14 +97,44 @@ function parseToml(src) {
     const eq = line.indexOf('=')
     if (eq === -1) continue
     const key = line.slice(0, eq).trim()
-    const valueStr = stripComment(line.slice(eq + 1).trim())
-    current[key] = parseTomlValue(valueStr)
+
+    // Acumula o valor enquanto as chaves/colchetes nao fecharem (arrays e
+    // tabelas inline podem ocupar varias linhas).
+    let valueStr = line.slice(eq + 1).trim()
+    while (balanceOf(valueStr) > 0 && i < lines.length) {
+      valueStr += '\n' + lines[i].trim()
+      i++
+    }
+    current[key] = parseTomlValue(stripComment(valueStr))
   }
   return root
 }
 
+// Conta colchetes/chaves abertos menos fechados (fora de strings).
+function balanceOf(s) {
+  let depth = 0
+  let inStr = false
+  let quote = ''
+  for (let j = 0; j < s.length; j++) {
+    const c = s[j]
+    if (inStr) {
+      if (c === quote && s[j - 1] !== '\\') inStr = false
+      continue
+    }
+    if (c === '"' || c === "'") {
+      inStr = true
+      quote = c
+      continue
+    }
+    if (c === '[' || c === '{') depth++
+    if (c === ']' || c === '}') depth--
+  }
+  return depth
+}
+
 function stripComment(s) {
-  // naive: cut trailing # only when not inside quotes
+  // naive: cut trailing # only when not inside quotes. Num valor multilinha,
+  // so remove o comentario se estiver na ultima linha (valor continua).
   let inStr = false
   let quote = ''
   for (let i = 0; i < s.length; i++) {
@@ -97,6 +145,9 @@ function stripComment(s) {
       inStr = true
       quote = c
     } else if (c === '#') {
+      // Comentario que deixa o valor incompleto (multilinha) nao corta.
+      const rest = s.slice(i + 1)
+      if (balanceOf(rest) !== balanceOf('') || rest.includes('\n')) continue
       return s.slice(0, i).trim()
     }
   }
@@ -109,6 +160,16 @@ function parseTomlValue(s) {
     const inner = s.slice(1, -1).trim()
     if (!inner) return []
     return splitTopLevel(inner).map(parseTomlValue)
+  }
+  if (s.startsWith('{') && s.endsWith('}')) {
+    // Inline table (ex: { lat = -15.8267, lng = -47.9218, label = "x" })
+    const obj = {}
+    for (const part of splitTopLevel(s.slice(1, -1))) {
+      const eq = part.indexOf('=')
+      if (eq === -1) continue
+      obj[part.slice(0, eq).trim()] = parseTomlValue(part.slice(eq + 1).trim())
+    }
+    return obj
   }
   if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\n/g, '\n')
@@ -258,6 +319,63 @@ export default {
 `
 }
 
+// ---------------------------------------------------------------------------
+// Secao Atuacao (mapa das RAs do DF)
+//
+// Gera src/data/atuacao.js a partir da secao [atuacao] do site.toml:
+//
+//   [atuacao]
+//   titulo = "Onde eu atuo"
+//   descricao = "As regioes do DF onde concentro meu trabalho."
+//   areasAtuacao = ["Ceilandia", "Taguatinga", "Plano Piloto"]
+//   pins = [
+//     { lat = -15.8267, lng = -47.9218, label = "Comite central", tipo = "comite" },
+//   ]
+//
+// Se a secao nao existir, mantem o atuacao.js do template (vazio, neutro).
+// ---------------------------------------------------------------------------
+function buildAtuacao(cfg) {
+  const a = cfg.atuacao || {}
+  const areas = Array.isArray(a.areasAtuacao)
+    ? a.areasAtuacao.filter((x) => typeof x === 'string' && x.trim())
+    : []
+  const pins = Array.isArray(a.pins)
+    ? a.pins.filter((p) => p && typeof p === 'object' && typeof p.lat === 'number' && typeof p.lng === 'number')
+    : []
+
+  const titulo = typeof a.titulo === 'string' && a.titulo.trim() ? a.titulo : 'Onde eu atuo'
+  const descricao =
+    typeof a.descricao === 'string' && a.descricao.trim()
+      ? a.descricao
+      : 'As regioes do Distrito Federal onde concentro meu trabalho e minhas prioridades.'
+
+  return `// ============================================================
+// atuacao.js — dados do mapa de atuacao do candidato
+//
+// GERADO automaticamente por tools/generate-sites.mjs a partir da
+// secao [atuacao] do site.toml. Edite o site.toml e re-genere
+// (ou rode --sync) em vez de editar este arquivo na mao.
+// ============================================================
+
+export default {
+  titulo: ${jsStr(titulo)},
+  descricao: ${jsStr(descricao)},
+
+  // RAs destacadas no mapa. Os nomes precisam bater com os do
+  // df-ras.geojson (ex: 'Ceilandia', 'Taguatinga', 'Plano Piloto').
+  // Vazio = mapa neutro, sem destaque.
+  areasAtuacao: ${JSON.stringify(areas, null, 2)},
+
+  // Pontos de interesse (lat/lng em graus decimais).
+  pins: ${JSON.stringify(pins, null, 2)},
+}
+`
+}
+
+function hasAtuacao(cfg) {
+  return !!(cfg.atuacao && typeof cfg.atuacao === 'object')
+}
+
 function collectMedia(siteDir) {
   const media = {}
   for (const kind of Object.keys(MEDIA_DIRS)) {
@@ -307,6 +425,11 @@ function generateSite(siteDir, opts) {
   // 3) generate site-config.js
   writeIfChanged(path.join(dest, 'src', 'site-config.js'), buildSiteConfig(cfg, media, siteDir))
 
+  // 3b) generate atuacao.js if site.toml has an [atuacao] section
+  if (hasAtuacao(cfg)) {
+    writeIfChanged(path.join(dest, 'src', 'data', 'atuacao.js'), buildAtuacao(cfg))
+  }
+
   // 4) patch index.html title + package.json name + wrangler.toml
   const indexHtml = path.join(dest, 'index.html')
   let html = fs.readFileSync(indexHtml, 'utf8')
@@ -349,6 +472,13 @@ function syncSite(siteDir, opts) {
   }
 
   const { written, preserved } = syncDir(TEMPLATE_DIR, dest)
+
+  // Se o site.toml define [atuacao], regenera o atuacao.js do candidato
+  // (o syncDir preserva o arquivo existente; aqui atualizamos da fonte).
+  if (hasAtuacao(cfg)) {
+    writeIfChanged(path.join(dest, 'src', 'data', 'atuacao.js'), buildAtuacao(cfg))
+  }
+
   return { status: 'synced', slug, name, written: written.length, preserved }
 }
 

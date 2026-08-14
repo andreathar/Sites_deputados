@@ -1,30 +1,44 @@
 // ============================================================
 // atuacao.js — dados do mapa de atuacao do candidato
 //
-// Este arquivo e preenchido MANUALMENTE com o que cada deputado passar.
-// Nao vai para o site publico nada de emendas, valores ou politica interna:
-// aqui e so a mensagem para o eleitor (onde atuo, minha regiao).
+// GERADO automaticamente por tools/generate-sites.mjs a partir da
+// secao [atuacao] do site.toml. Edite o site.toml e re-genere
+// (ou rode --sync) em vez de editar este arquivo na mao.
 // ============================================================
 
 export default {
-  // Titulo e texto da secao (ajuste por candidato se quiser).
-  titulo: 'Onde eu atuo',
-  descricao:
-    'As regioes do Distrito Federal onde concentro meu trabalho e minhas prioridades.',
+  titulo: "Onde eu atuo",
+  descricao: "Regioes do Distrito Federal onde concentro meu trabalho: atendimento nas comunidades, escuta ativa e prioridades de mandato.",
 
-  // Nomes das Regioes Administrativas (RAs) de atuacao.
-  // Precisam bater EXATAMENTE com a propriedade de nome no df-ras.geojson
-  // (ex: 'Ceilandia', 'Taguatinga', 'Plano Piloto'...).
-  // Deixe [] enquanto o deputado nao passar; o mapa mostra todas as RAs neutras.
+  // RAs destacadas no mapa. Os nomes precisam bater com os do
+  // df-ras.geojson (ex: 'Ceilandia', 'Taguatinga', 'Plano Piloto').
+  // Vazio = mapa neutro, sem destaque.
   areasAtuacao: [
-    // 'Ceilandia',
-    // 'Taguatinga',
-  ],
+  "Ceilandia",
+  "Taguatinga",
+  "Plano Piloto",
+  "Sobradinho"
+],
 
-  // Pontos de interesse que o deputado vai passar depois.
-  // lat/lng em graus decimais. label aparece ao passar o mouse / tocar.
-  // Ex: { lat: -15.8267, lng: -47.9218, label: 'Comite central', tipo: 'comite' }
+  // Pontos de interesse (lat/lng em graus decimais).
   pins: [
-    // { lat: -15.8267, lng: -47.9218, label: 'Comite central', tipo: 'comite' },
-  ],
+  {
+    "lat": -15.8267,
+    "lng": -47.9218,
+    "label": "Comite central",
+    "tipo": "comite"
+  },
+  {
+    "lat": -15.78,
+    "lng": -47.93,
+    "label": "Gabinete",
+    "tipo": "gabinete"
+  },
+  {
+    "lat": -15.8069,
+    "lng": -48.0756,
+    "label": "Base na Ceilandia",
+    "tipo": "base"
+  }
+],
 }

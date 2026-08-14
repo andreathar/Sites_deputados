@@ -8,6 +8,11 @@ import {
   interpolate,
   spring,
 } from "remotion";
+import { loadFont } from "@remotion/google-fonts/Poppins";
+
+const { fontFamily } = loadFont("normal", {
+  weights: ["400", "600", "700", "900"],
+});
 
 // ============================================================
 // Vinheta de abertura de 8s (240 frames @ 30fps) - 1080x1920
@@ -358,7 +363,7 @@ export const Intro = ({
   );
 
   return (
-    <AbsoluteFill style={{ opacity: fadeOut, fontFamily: "sans-serif" }}>
+    <AbsoluteFill style={{ opacity: fadeOut, fontFamily }}>
       <AuroraBackground corPrimaria={corPrimaria} />
       <Photo fotoPath={fotoPath} corPrimaria={corPrimaria} />
 

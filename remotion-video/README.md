@@ -37,21 +37,37 @@ O `fetch-candidatos.mjs` avisa quais candidatos estao sem numero ou mensagem, em
 O template le os caminhos relativos a `public/`. A convencao e:
 
 ```
-public/candidatos/<slug>/foto.png
+public/candidatos/<slug>/foto-raw.png   # foto original (qualquer fundo)
+public/candidatos/<slug>/foto.png        # gerada pelo recorte (fundo transparente)
 public/candidatos/<slug>/logo.png
 ```
 
 O `<slug>` vem do nome do candidato (minusculo, sem acento, com hifens). Se a foto ou a logo nao existir, o template mostra um placeholder no lugar, entao nada quebra durante a demo.
 
-## Sobre remocao de fundo
+## Recorte de fundo automatico (rembg)
 
-O Remotion **nao** remove fundo de foto: ele apenas usa a imagem que voce fornecer. Para o candidato aparecer recortado sobre o fundo animado, entregue a foto como **PNG com transparencia**. Opcoes para recortar antes:
+O Remotion nao remove fundo: ele usa a imagem que voce fornecer. Por isso o batch tem um passo de recorte que roda **antes** da renderizacao.
 
-- `rembg` (open-source, roda local) — bom para automatizar dentro do batch
-- API do remove.bg
-- Photoshop / editor manual
+Coloque a foto original de cada candidato como `foto-raw.png` (ou .jpg/.jpeg/.webp) na pasta dele. Ao rodar o batch, `tools/prep-fotos.mjs` gera `foto.png` com o fundo removido, que e o que o template usa. O recorte e idempotente: so processa fotos novas ou alteradas.
 
-Se a foto ja vier transparente do time grafico, e so soltar na pasta do candidato.
+Requisito (uma vez):
+
+```bash
+pipx install rembg        # recomendado
+# ou: pip install "rembg[cli]"
+```
+
+Se o rembg nao estiver instalado, o batch avisa e segue em frente usando o `foto.png` existente (ou o placeholder). Para pular o recorte de proposito:
+
+```bash
+node tools/render-batch.mjs --skip-prep
+```
+
+Para recortar sem renderizar:
+
+```bash
+node tools/prep-fotos.mjs
+```
 
 ## Especificacoes fixas
 

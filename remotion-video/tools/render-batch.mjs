@@ -55,6 +55,15 @@ for (const c of candidatos) {
     props.citacao = props.mensagem || "Trabalhando pelo desenvolvimento e futuro do Distrito Federal.";
   }
 
+  // Se a foto nao existe em public/, limpa o path para o template usar o placeholder.
+  if (props.fotoPath) {
+    const fotoFile = path.join("public", props.fotoPath);
+    if (!fs.existsSync(fotoFile)) {
+      console.warn(`  (sem foto em ${fotoFile}, usando placeholder)`);
+      props.fotoPath = "";
+    }
+  }
+
   // Se o jingle nao existe em public/, desativa o audio para nao quebrar o render.
   if (props.audioPath) {
     const audioFile = path.join("public", props.audioPath);

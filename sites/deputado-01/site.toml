@@ -18,3 +18,5 @@ pins = [
   { lat = -15.8069, lng = -48.0756, label = "Base na Ceilandia", tipo = "base" }
 ]
 
+jingle_estilo = "pagode brasileiro alegre e animado, cavaquinho, tantan, repique de mão, surdo, pandeiro, violão de 7 cordas, coro masculino e feminino cantando junto, ritmo contagiante de roda de pagode, sem elementos eletrônicos, sem EDM, sem sintetizadores, estilo Grupo Revelação e Thiaguinho, jingle de campanha política chiclete e fácil de memorizar"
+jingle_duracao_seg = 75

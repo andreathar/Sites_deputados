@@ -108,7 +108,7 @@ for (const siteDir of getSiteDirs()) {
     numero: toml.numero || "",
     mensagem: toml.mensagem || "",
     corPrimaria: toml.corPrimaria || "#1b6ef3",
-    fotoPath: `candidatos/${slug}/foto.png`,
+    fotoPath: fotoSrc ? `candidatos/${slug}/foto.png` : "",
     logoPath: logoSrc ? `candidatos/${slug}/logo${path.extname(logoSrc)}` : "",
     audioPath: audioSrc ? `candidatos/${slug}/jingle${path.extname(audioSrc)}` : "",
     slug,

@@ -14,6 +14,11 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { config } from "dotenv";
+
+// Load .env from project root (../../ relative to tools/)
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+config({ path: path.join(__dirname, "..", "..", ".env") });
 
 const API_ROOT = "https://api.clickup.com/api/v2";
 const CANDIDATES_LIST_ID = "901715749173";

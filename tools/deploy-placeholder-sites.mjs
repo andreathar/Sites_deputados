@@ -2,9 +2,11 @@
 /**
  * Compila e publica os sites placeholder em Cloudflare Pages.
  *
- * O deploy usa uma configuracao temporaria sem NEWSLETTER_KV. As Pages
- * Functions continuam ativas, mas inscricoes nao sao persistidas ate que o KV
- * de producao seja provisionado.
+ * O deploy direto do Pages detecta functions/ no diretorio do site. Sem um KV
+ * provisionado no projeto, a Function de newsletter continua ativa, mas nao
+ * persiste inscricoes durante a fase placeholder. O wrangler.toml de producao
+ * tem um ID de KV propositalmente pendente; ele e ocultado e restaurado apenas
+ * durante o deploy para impedir a validacao desse valor incompleto.
  *
  * Uso:
  *   node tools/deploy-placeholder-sites.mjs --all --build
@@ -13,7 +15,6 @@
  */
 import {execFileSync} from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -106,41 +107,46 @@ function buildSite(slug) {
   }
 }
 
-function temporaryPagesConfig(slug) {
-  const file = path.join(os.tmpdir(), `pages-placeholder-${slug}.toml`);
-  fs.writeFileSync(
-    file,
-    `name = "${slug}"\ncompatibility_date = "2026-08-17"\npages_build_output_dir = "dist"\n`
-  );
-  return file;
-}
-
 function listProjects() {
   const stdout = execFileSync("npx", ["wrangler", "pages", "project", "list", "--json"], {
     cwd: ROOT,
     encoding: "utf8",
     stdio: ["inherit", "pipe", "inherit"],
   });
-  return new Set(JSON.parse(stdout).map((project) => project.name));
+  return new Set(
+    JSON.parse(stdout)
+      .map((project) => project.name || project["Project Name"])
+      .filter(Boolean)
+  );
+}
+
+function deployWithoutProductionConfig(siteDir, commandArgs) {
+  const config = path.join(siteDir, "wrangler.toml");
+  const backup = path.join(siteDir, ".wrangler.toml.placeholder-deploy-backup");
+  const hasConfig = fs.existsSync(config);
+  if (hasConfig && fs.existsSync(backup)) {
+    throw new Error(`backup de deploy pendente encontrado em ${backup}; restaure ou remova-o antes de continuar`);
+  }
+
+  try {
+    if (hasConfig) fs.renameSync(config, backup);
+    run("npx", commandArgs, {cwd: siteDir});
+  } finally {
+    if (hasConfig && fs.existsSync(backup)) fs.renameSync(backup, config);
+  }
 }
 
 function deploySite(slug, existingProjects) {
   const siteDir = ensureSite(slug);
-  const config = temporaryPagesConfig(slug);
-  try {
-    if (!existingProjects.has(slug)) {
-      run("npx", ["wrangler", "pages", "project", "create", slug, "--production-branch", "main"], {cwd: siteDir});
-      existingProjects.add(slug);
-    }
-    run("npx", [
-      "wrangler", "pages", "deploy", "dist", "--project-name", slug,
-      "--branch", PREVIEW_BRANCH,
-      "--commit-message", "Placeholder inicial para personalizacao de campanha",
-      "--config", config,
-    ], {cwd: siteDir});
-  } finally {
-    fs.rmSync(config, {force: true});
+  if (!existingProjects.has(slug)) {
+    run("npx", ["wrangler", "pages", "project", "create", slug, "--production-branch", "main"], {cwd: siteDir});
+    existingProjects.add(slug);
   }
+  deployWithoutProductionConfig(siteDir, [
+    "wrangler", "pages", "deploy", "dist", "--project-name", slug,
+    "--branch", PREVIEW_BRANCH,
+    "--commit-message", "Placeholder inicial para personalizacao de campanha",
+  ]);
 }
 
 function main() {

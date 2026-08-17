@@ -48,10 +48,14 @@ candidato aprovado, faça um deploy da branch de produção após validação.
 
 ## Newsletter durante a fase placeholder
 
-Os sites têm uma Function `/api/subscribe`, mas o binding `NEWSLETTER_KV` atual
-ainda é um placeholder. O comando de lote injeta temporariamente uma
-configuração Pages sem esse binding: a Function continua respondendo ao
-formulário, porém não persiste e-mails. Não use esta fase para captação real.
+Os sites têm uma Function `/api/subscribe`, mas o binding `NEWSLETTER_KV` ainda
+não foi provisionado. O deploy direto do Pages detecta a pasta `functions/` e
+publica a Function, que continua respondendo ao formulário; sem o binding, ela
+não persiste e-mails. Não use esta fase para captação real.
+
+Durante o deploy placeholder, o script oculta e restaura automaticamente o
+`wrangler.toml` de produção. Isso evita que o ID provisório do KV seja validado
+pela Cloudflare; o arquivo é restaurado mesmo quando o deploy falha.
 
 Antes de habilitar captação, crie ou associe um namespace KV real em cada
 projeto (ou implemente uma rota centralizada), atualize o `wrangler.toml`

@@ -1,0 +1,5 @@
+{
+  "env": {
+    "COGNEE_PLUGIN_DATASET": "claude_project_sites_deputados"
+  }
+}

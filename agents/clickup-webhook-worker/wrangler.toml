@@ -1,0 +1,13 @@
+name = "clickup-webhook-worker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+CLICKUP_API_ROOT = "https://api.clickup.com/api/v2"
+CANDIDATES_LIST_ID = "901715749173"
+CONTENT_LIST_ID = "901715749176"
+SITES_LIST_ID = "901716074162"
+
+# Secrets (configure via wrangler secret put)
+# CLICKUP_TOKEN = "pk_xxx"
+# CLICKUP_WEBHOOK_SECRET = "your_webhook_secret"

@@ -104,6 +104,9 @@ for (const siteDir of getSiteDirs()) {
   }
 
   candidatos.push({
+    // Preserva o vínculo explícito do site com o cadastro no ClickUp para que
+    // upload-clickup.mjs possa anexar a intro à tarefa correta.
+    taskId: toml.clickup_task_id || "",
     nome: toml.candidate_name || slug,
     numero: toml.numero || "",
     mensagem: toml.mensagem || "",

@@ -153,21 +153,30 @@ function findExistingTask(contentTasks, candidateTaskId, stage) {
 }
 
 async function createTask(definition, candidateTaskId, parentId) {
-  return request(`/list/${CONTENT_LIST_ID}/task`, {
+  // Create task without custom fields first
+  const task = await request(`/list/${CONTENT_LIST_ID}/task`, {
     method: "POST",
     body: JSON.stringify({
       name: definition.name,
       markdown_description: definition.description,
-      priority: "normal",
+      priority: 3,
       ...(parentId ? { parent: parentId } : {}),
-      custom_fields: [
-        {
-          id: CANDIDATE_RELATION_FIELD_ID,
-          value: JSON.stringify({ add: [candidateTaskId], rem: [] }),
-        },
-      ],
     }),
   });
+
+  // Set relationship field separately (can't be set on creation for relationship type)
+  if (task.id && candidateTaskId) {
+    try {
+      await request(`/task/${task.id}/field/${CANDIDATE_RELATION_FIELD_ID}`, {
+        method: "POST",
+        body: JSON.stringify({ value: [candidateTaskId] }),
+      });
+    } catch (err) {
+      console.log(`    ⚠️ Aviso: não foi possível vincular campo Candidato: ${err.message}`);
+    }
+  }
+
+  return task;
 }
 
 async function ensureDependency(taskId, dependsOn) {
